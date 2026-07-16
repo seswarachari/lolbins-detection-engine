@@ -5,7 +5,7 @@
 ![Cybersecurity](https://img.shields.io/badge/Cybersecurity-Blue%20Team-blue)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 
-Welcome to the **LOLBins Hybrid Detection Engine**! This is a cybersecurity portfolio project designed to catch clever hackers who try to hide in plain sight. It combines strict security rules with Artificial Intelligence to flag suspicious activity on a computer system.
+Welcome to the **LOLBins Hybrid Detection Engine**! This is a comprehensive cybersecurity portfolio project designed to detect advanced hackers who try to hide their tracks by using legitimate Windows tools for malicious purposes.
 
 ---
 
@@ -15,25 +15,23 @@ Imagine a bank robber who doesn't break in wearing a ski mask, but instead steal
 
 In cybersecurity, hackers do the exact same thing. Instead of downloading obvious viruses (which your antivirus software would instantly catch), they use tools that are **already built into Windows** to do their hacking. These tools are called **LOLBins** ("Living Off the Land" Binaries). 
 
-Because these tools (like `PowerShell`, `certutil`, or `cmd`) are officially made and signed by Microsoft, standard antivirus software completely ignores them.
-
-**This project is a custom-built security engine designed to catch these disguised hackers.**
+Because these tools (like `PowerShell`, `certutil`, or `cmd`) are officially made and signed by Microsoft, standard antivirus software completely ignores them. This project is a custom-built security engine designed to catch these disguised hackers.
 
 ---
 
-## 🧠 The Solution: How This Engine Works
+## 🧠 The Solution: 3-Layer Architecture
 
 If regular antivirus can't catch LOLBins, how do we? We built a **3-Layer Defense System**. Think of it like three different security guards, each looking for something different.
 
 ### 👮 Layer 1: The Rule Book (Sigma Rules)
 This is like a bouncer at a club holding a "Banned List." We give the engine a list of strict rules. For example, one rule says: *"If the built-in Windows Certificate Tool (`certutil.exe`) is used to download a file from the internet, sound the alarm."* 
-* **The Good:** It is incredibly accurate and fast at catching known hacking tricks.
+* **The Good:** Extremely accurate and fast at catching known hacking tricks.
 * **The Bad:** If the hacker uses a brand new trick that isn't on the list, the bouncer lets them in.
 
 ### 🤖 Layer 2: The AI Brain (Machine Learning)
-Because hackers change their tricks constantly, we need an AI that looks for "weirdness" instead of a strict list. We trained an Unsupervised Machine Learning model on what a normal workday looks like. 
+Because hackers change their tricks constantly, we need an AI that looks for "weirdness" instead of a strict list. We trained an Unsupervised Machine Learning model (Isolation Forest, Local Outlier Factor, and One-Class SVM) on what a normal workday looks like. 
 When the AI sees something weird—like an encrypted, 500-character long PowerShell command running at 3:00 AM—it flags it as an "Anomaly," even if there is no rule for it!
-* **The Good:** It catches brand-new, never-before-seen hacking tricks.
+* **The Good:** Catches brand-new, zero-day hacking tricks.
 
 ### 🕵️ Layer 3: The Detective (Behavioral Chain Analysis)
 This layer looks at the "Family Tree" of a program. If `cmd.exe` (the command prompt) opens, that's normal. But what if Microsoft Word (`winword.exe`) suddenly opens `cmd.exe`? That almost never happens in real life, and it usually means a hacker hid a virus inside a Word document macro! The detective connects these dots.
@@ -43,43 +41,103 @@ Finally, all three layers combine their notes. If multiple layers flag the same 
 
 ---
 
-## 🏗️ Technical Architecture 
+## 🌊 System Architecture & File Execution Diagram
 
-Here is how the data flows through the program from start to finish:
+Here is a visual representation of how the files in this repository interact with each other to process data, catch threats, and generate reports.
 
 ```mermaid
 graph TD
-    A["📊 Raw Sysmon Logs<br/>(1000 events)"] --> B["⚙️ Feature Engineering<br/>(Translating logs to Math)"]
-    B --> C["📋 Layer 1: Sigma Rules<br/>(10 YAML rules)"]
-    B --> D["🤖 Layer 2: ML Ensemble<br/>(Isolation Forest + SVM)"]
-    B --> E["🔗 Layer 3: Chain Analyzer<br/>(Process family trees)"]
-    C --> F["🔀 Fusion Engine<br/>(Weighted confidence)"]
-    D --> F
-    E --> F
-    F --> G["🚨 Prioritized Alerts<br/>(CRITICAL/HIGH/MEDIUM/LOW)"]
-    F --> H["📊 Streamlit Dashboard"]
+    %% Data Generation
+    GenData["📄 src/generate_synthetic_data.py<br/>(Creates 1,000 Fake Logs)"] --> RawData[("📁 data/raw_logs/<br/>sysmon_events.json & csv")]
+    
+    %% Feature Engineering
+    RawData --> FeatEng["⚙️ src/feature_engineering.py<br/>(Translates logs to math)"]
+    
+    %% Layer 1
+    FeatEng --> SigmaEngine["📋 src/sigma_engine.py<br/>(Layer 1: Rule Engine)"]
+    SigmaRules["📁 rules/sigma_rules/*.yml<br/>(10 Custom Threat Rules)"] -.-> SigmaEngine
+    
+    %% Layer 2
+    FeatEng --> MLEngine["🤖 src/ml_anomaly_scorer.py<br/>(Layer 2: AI Brain)"]
+    MLEngine -.-> Models[("📁 models/<br/>ml_ensemble.joblib")]
+    
+    %% Layer 3
+    FeatEng --> ChainEngine["🔗 src/chain_analyzer.py<br/>(Layer 3: Family Tree)"]
+    
+    %% Fusion
+    SigmaEngine --> Pipeline["🔀 src/detection_pipeline.py<br/>(Fusion Engine)"]
+    MLEngine --> Pipeline
+    ChainEngine --> Pipeline
+    
+    %% Output
+    Pipeline --> Alerts[("📁 data/alerts.csv<br/>(Caught Hackers)")]
+    
+    %% UI and Eval
+    Alerts --> Dashboard["💻 dashboard/app.py<br/>(Streamlit Web UI)"]
+    Alerts --> Eval["📊 src/evaluate.py<br/>(Grades the Engine)"]
+    Eval -.-> Reports[("📁 reports/<br/>Charts & Graphs")]
+
+    %% Styling
+    style GenData fill:#1a1a2e,stroke:#e94560,color:#fff
+    style FeatEng fill:#16213e,stroke:#0f3460,color:#fff
+    style SigmaEngine fill:#0f3460,stroke:#e94560,color:#fff
+    style MLEngine fill:#0f3460,stroke:#e94560,color:#fff
+    style ChainEngine fill:#0f3460,stroke:#e94560,color:#fff
+    style Pipeline fill:#e94560,stroke:#fff,color:#fff
+    style Dashboard fill:#1a1a2e,stroke:#e94560,color:#fff
+    style Eval fill:#1a1a2e,stroke:#0f3460,color:#fff
 ```
 
 ---
 
-## 📊 Where Did the Data Come From?
+## 📂 Deep Dive: Every File Explained in Detail
 
-**We did NOT download an existing dataset from the internet.** 
+To fully understand this project, here is an exhaustive breakdown of exactly what every single file and folder in this repository does. 
 
-In the real world, you would get this data from a Windows system using a tool called "Sysmon" (System Monitor), which tracks every single program that opens on a computer. Because we didn't have thousands of hacked computers to pull data from, **we built a script to generate our own highly realistic dataset.**
+### 1. The Core Source Code (`src/` folder)
+This folder contains the actual Python brains of the operation.
+*   **`src/generate_synthetic_data.py`**
+    *   **What it does:** Because we don't have thousands of hacked enterprise computers to pull logs from, this script writes its own! It generates 1,000 highly realistic "Sysmon Event ID 1" logs. 
+    *   **How it works:** It uses Python's `random` libraries to create 800 completely normal workday events (like Bob in HR opening Chrome), 100 malicious events (like a hacker downloading a payload), and 100 "gray-area" events (like an IT admin running a weird script at 2 AM).
+*   **`src/feature_engineering.py`**
+    *   **What it does:** Machine Learning algorithms cannot read English sentences; they only understand math. This script reads the raw text logs and extracts 29 numerical "Features".
+    *   **How it works:** It calculates things like the exact length of a command, checks if there is a URL present, and even uses a mathematical formula called "Shannon Entropy" to figure out if a command looks like it was encrypted by a hacker to hide its true purpose.
+*   **`src/sigma_engine.py` (Layer 1)**
+    *   **What it does:** This is the deterministic rule-matcher. It scans every event to see if it perfectly matches known hacker behavior.
+    *   **How it works:** It reads the `.yml` rule files (stored in the `rules/` folder) and acts as a filter. If an event contains the exact bad keywords we defined, it flags it immediately.
+*   **`src/ml_anomaly_scorer.py` (Layer 2)**
+    *   **What it does:** This is the Artificial Intelligence layer. 
+    *   **How it works:** It loads three different algorithms (Isolation Forest, Local Outlier Factor, and One-Class SVM) using the `scikit-learn` library. It looks at the baseline of 800 normal events, memorizes what "normal" looks like, and then scores every other event from 0 to 100 based on how "weird" it is.
+*   **`src/chain_analyzer.py` (Layer 3)**
+    *   **What it does:** This script acts as a contextual detective. 
+    *   **How it works:** It looks specifically at `ParentImage` and `Image` to see who spawned who. If it sees `winword.exe` spawning `powershell.exe`, it knows immediately that this is a classic phishing macro attack and gives it a massive risk score.
+*   **`src/detection_pipeline.py`**
+    *   **What it does:** This is the orchestra conductor. It is the main file that runs everything else in order.
+    *   **How it works:** It calls the data generator, passes the data to the feature engineer, feeds it into all three layers (Sigma, ML, Chain), and then mathematically combines their scores to output a final verdict: CRITICAL, HIGH, MEDIUM, LOW, or CLEAR.
+*   **`src/evaluate.py`**
+    *   **What it does:** This acts as the grader/teacher for the project. 
+    *   **How it works:** It knows exactly which logs were *actually* malicious (because we generated them). It looks at the engine's final verdicts and calculates how accurate the engine was, creating Precision/Recall metrics and generating the images saved in the `reports/` folder.
 
-Our `generate_synthetic_data.py` script created 1,000 mathematically accurate Windows logs:
-*   **800 Benign Events:** Normal things a regular employee does (like opening Google Chrome).
-*   **100 Malicious Events:** Specific, known hacking techniques using LOLBins.
-*   **100 Gray-Area Events:** Tricky actions that an IT administrator might do legitimately, but that look suspicious (to make sure our engine doesn't accidentally ban the IT guy).
+### 2. The Rule Book (`rules/` folder)
+*   **`rules/sigma_rules/*.yml`**
+    *   **What it does:** There are 10 YAML files in here. These are written in an industry-standard format called "Sigma". They act as hardcoded signatures for the engine.
+    *   **Example:** `certutil_download.yml` tells the engine: "If you see `certutil.exe` AND the word `urlcache`, it means a hacker is abusing a certificate tool to illegally download malware."
 
-When we ran these 1,000 logs through the engine, **it successfully caught 100% of the malicious attacks**.
+### 3. The Dashboard (`dashboard/` folder)
+*   **`dashboard/app.py`**
+    *   **What it does:** Python terminal output is ugly. This file creates a beautiful, interactive web interface.
+    *   **How it works:** It uses the `Streamlit` library to build a UI. It reads the final `alerts.csv` file and generates interactive pie charts, bar graphs, and filterable tables so a Security Operations Center (SOC) analyst could actually use this tool to investigate threats comfortably.
+
+### 4. The Output Folders (`data/`, `reports/`, `models/`)
+*   **`data/`**: Holds all the generated CSV and JSON logs. `full_dataset.csv` is the raw logs, and `alerts.csv` is the final list of caught hackers.
+*   **`reports/`**: Holds the PNG images (like confusion matrices and ROC curves) generated by `evaluate.py` proving that the engine caught 100% of the attacks.
+*   **`models/`**: Holds a `.joblib` file. This is the saved "brain" of the Machine Learning model so it doesn't have to relearn what normal looks like every single time you boot it up.
 
 ---
 
 ## 💻 How to run it on your own machine
 
-You don't need a complex Windows lab to run this! The data generator allows you to test the engine on Mac, Linux, or Windows.
+You don't need a complex Windows lab to run this! The data generator allows you to test the engine entirely on a Mac, Linux, or Windows machine.
 
 ### Step 1: Install Python and Download the Code
 Download this folder to your computer, open your terminal, and navigate into the folder:
@@ -88,7 +146,7 @@ cd path/to/lolbins-detection-engine
 ```
 
 ### Step 2: Install the required packages
-Run this command to install the necessary Python libraries:
+Run this command to install the necessary Python libraries (like pandas and scikit-learn):
 ```bash
 pip install -r requirements.txt
 ```
@@ -100,13 +158,13 @@ python3 src/generate_synthetic_data.py
 ```
 
 ### Step 4: Run the Detection Engine
-Now, let's feed those logs into our 3-Layer engine!
+Now, let's feed those logs into our 3-Layer engine to catch the bad guys!
 ```bash
 python3 src/detection_pipeline.py
 ```
 
 ### Step 5: View the Interactive Dashboard!
-I built a sleek web dashboard so you can visually see the alerts, just like a real security analyst would. Run this command:
+Run this command to spin up the web UI and view your alerts:
 ```bash
 python3 -m streamlit run dashboard/app.py
 ```

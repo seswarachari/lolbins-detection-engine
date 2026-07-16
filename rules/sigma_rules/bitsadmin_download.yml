@@ -1,0 +1,35 @@
+title: BITSAdmin File Download
+id: 9b2a4d8e-3c0f-4a7b-fd1e-4l8c7a9b0d1e
+status: experimental
+description: |
+    Detects bitsadmin.exe being used with /transfer and /download flags to download
+    files from remote URLs. BITSAdmin (T1197) is a legitimate Windows utility for
+    managing Background Intelligent Transfer Service jobs, but attackers abuse it
+    to download malicious payloads while evading network monitoring.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Bitsadmin/
+    - https://attack.mitre.org/techniques/T1197/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.defense_evasion
+    - attack.persistence
+    - attack.t1197
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\bitsadmin.exe'
+        CommandLine|contains:
+            - '/transfer'
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+    condition: selection
+falsepositives:
+    - WSUS/SCCM client operations using BITS for update downloads
+    - Legitimate software deployment tools using BITS transfers
+    - System administrators using bitsadmin for authorized file transfers
+level: high

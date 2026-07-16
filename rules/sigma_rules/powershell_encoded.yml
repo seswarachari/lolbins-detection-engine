@@ -1,0 +1,42 @@
+title: PowerShell Encoded Command Execution
+id: 7f0e2b6c-1a8d-4e5f-db9c-2j6a5e7f8b9c
+status: experimental
+description: |
+    Detects PowerShell execution with encoded commands (-enc / -EncodedCommand flag),
+    especially combined with stealth flags like -NoProfile, -WindowStyle Hidden, and
+    -ExecutionPolicy Bypass. Encoded PowerShell (T1059.001) is the most common LOLBin
+    technique used by attackers to obfuscate malicious commands.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Powershell/
+    - https://attack.mitre.org/techniques/T1059/001/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.execution
+    - attack.t1059.001
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_encoded:
+        Image|endswith: '\powershell.exe'
+        CommandLine|contains:
+            - '-enc '
+            - '-EncodedCommand'
+            - '-ec '
+    selection_hidden:
+        Image|endswith: '\powershell.exe'
+        CommandLine|contains:
+            - '-w hidden'
+            - '-WindowStyle Hidden'
+            - '-windowstyle hidden'
+        CommandLine|contains:
+            - '-nop'
+            - '-NoProfile'
+    condition: selection_encoded or selection_hidden
+falsepositives:
+    - Legitimate automation scripts using encoded commands for special character handling
+    - SCCM/Intune deployment scripts that use encoded PowerShell
+    - Some monitoring agents that use encoded PowerShell for data collection
+level: high

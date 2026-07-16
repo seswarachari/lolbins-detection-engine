@@ -1,0 +1,41 @@
+title: WScript or CScript Remote Script Execution
+id: 1d4c6f0a-5e2b-4c9d-bf3a-6n0e9c1d2f3a
+status: experimental
+description: |
+    Detects wscript.exe or cscript.exe executing remote scripts via HTTP/HTTPS URLs
+    or using the //e: engine selection parameter. These Windows Script Host binaries
+    (T1059.005) can execute JScript and VBScript from remote locations, allowing
+    attackers to run malicious scripts without downloading files to disk.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Wscript/
+    - https://lolbas-project.github.io/lolbas/Binaries/Cscript/
+    - https://attack.mitre.org/techniques/T1059/005/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.execution
+    - attack.t1059.005
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_remote:
+        Image|endswith:
+            - '\wscript.exe'
+            - '\cscript.exe'
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+    selection_engine:
+        Image|endswith:
+            - '\wscript.exe'
+            - '\cscript.exe'
+        CommandLine|contains:
+            - '//e:jscript'
+            - '//e:vbscript'
+    condition: selection_remote or selection_engine
+falsepositives:
+    - Legitimate logon scripts deployed via Group Policy
+    - Internal automation scripts using wscript/cscript with network paths
+level: high

@@ -1,0 +1,35 @@
+title: Certutil URL Cache Download
+id: 3b6a8d2e-7c4f-4a1b-9d5e-8f2c1a3b4d5e
+status: experimental
+description: |
+    Detects certutil.exe being used with -urlcache flag to download files from
+    remote URLs. This is a well-known LOLBin technique (T1105) where attackers
+    abuse the legitimate certificate utility to download malicious payloads,
+    bypassing application whitelisting and proxy controls.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Certutil/
+    - https://attack.mitre.org/techniques/T1105/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.command_and_control
+    - attack.t1105
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\certutil.exe'
+        CommandLine|contains:
+            - '-urlcache'
+            - '/urlcache'
+    filter:
+        CommandLine|contains:
+            - '-verify'
+            - '-hashfile'
+    condition: selection and not filter
+falsepositives:
+    - Legitimate certificate enrollment using certutil with URL-based CRL distribution points
+    - PKI administrators managing certificate revocation lists
+level: high

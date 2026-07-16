@@ -1,0 +1,34 @@
+title: MSBuild Inline Task Execution
+id: 0c3b5e9f-4d1a-4b8c-ae2f-5m9d8b0c1e2f
+status: experimental
+description: |
+    Detects MSBuild.exe being used to execute inline tasks from project files,
+    particularly when the project files are located in user-writable directories.
+    MSBuild (T1127.001) can compile and execute arbitrary C# code embedded in
+    .csproj/.xml files, allowing attackers to run code without traditional executables.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Msbuild/
+    - https://attack.mitre.org/techniques/T1127/001/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.defense_evasion
+    - attack.execution
+    - attack.t1127.001
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\MSBuild.exe'
+        CommandLine|contains:
+            - '\Users\Public\'
+            - '\Temp\'
+            - '\AppData\'
+            - '\Downloads\'
+    condition: selection
+falsepositives:
+    - Software developers building projects from user directories
+    - CI/CD build agents running MSBuild on developer workstations
+level: high

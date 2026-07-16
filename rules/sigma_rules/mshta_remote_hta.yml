@@ -1,0 +1,36 @@
+title: Mshta Remote HTA Execution
+id: 4c7b9e3f-8d5a-4b2c-ae6f-9g3d2b4c5e6f
+status: experimental
+description: |
+    Detects mshta.exe executing remote HTA (HTML Application) files via HTTP/HTTPS.
+    Attackers use mshta.exe (T1218.005) to execute malicious scripts hosted on
+    remote servers, bypassing application whitelisting since mshta is a signed
+    Microsoft binary.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Mshta/
+    - https://attack.mitre.org/techniques/T1218/005/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.defense_evasion
+    - attack.t1218.005
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_remote:
+        Image|endswith: '\mshta.exe'
+        CommandLine|contains:
+            - 'http://'
+            - 'https://'
+    selection_vbscript:
+        Image|endswith: '\mshta.exe'
+        CommandLine|contains:
+            - 'vbscript:'
+            - 'javascript:'
+    condition: selection_remote or selection_vbscript
+falsepositives:
+    - Legacy internal web applications using HTA for admin interfaces
+    - Help desk tools that launch HTA-based diagnostic utilities
+level: high

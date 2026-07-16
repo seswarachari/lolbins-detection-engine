@@ -1,0 +1,39 @@
+title: Office Application Spawning Command Shell
+id: 8a1f3c7d-2b9e-4f6a-ec0d-3k7b6f8a9c0d
+status: experimental
+description: |
+    Detects Microsoft Office applications (Word, Excel, PowerPoint, Outlook) spawning
+    command shell processes (cmd.exe, powershell.exe). This pattern (T1204.002) strongly
+    indicates macro-based malware execution, as legitimate Office workflows rarely
+    need to spawn shell processes directly.
+references:
+    - https://attack.mitre.org/techniques/T1204/002/
+    - https://attack.mitre.org/techniques/T1059/001/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.execution
+    - attack.t1204.002
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        ParentImage|endswith:
+            - '\WINWORD.EXE'
+            - '\EXCEL.EXE'
+            - '\POWERPNT.EXE'
+            - '\OUTLOOK.EXE'
+        Image|endswith:
+            - '\cmd.exe'
+            - '\powershell.exe'
+            - '\wscript.exe'
+            - '\cscript.exe'
+            - '\mshta.exe'
+    condition: selection
+falsepositives:
+    - Office add-ins that legitimately invoke shell commands
+    - Macro-enabled automation templates approved by IT security
+    - Some document management systems that use Office COM automation
+level: critical

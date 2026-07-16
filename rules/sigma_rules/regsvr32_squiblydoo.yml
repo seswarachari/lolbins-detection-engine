@@ -1,0 +1,33 @@
+title: Regsvr32 Squiblydoo Remote SCT Execution
+id: 5d8c0f4a-9e6b-4c3d-bf7a-0h4e3c5d6f7a
+status: experimental
+description: |
+    Detects regsvr32.exe being used to execute remote .sct (scriptlet) files via
+    the /i:http parameter combined with scrobj.dll. This technique, known as
+    "Squiblydoo" (T1218.010), allows attackers to execute arbitrary code by
+    loading COM scriptlets from remote servers.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Regsvr32/
+    - https://attack.mitre.org/techniques/T1218/010/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.defense_evasion
+    - attack.t1218.010
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\regsvr32.exe'
+        CommandLine|contains:
+            - '/i:http'
+            - '/i:https'
+    selection_scrobj:
+        Image|endswith: '\regsvr32.exe'
+        CommandLine|contains: 'scrobj.dll'
+    condition: selection or selection_scrobj
+falsepositives:
+    - Very rare legitimate use of regsvr32 with remote COM scriptlets in enterprise environments
+level: critical

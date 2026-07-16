@@ -1,0 +1,31 @@
+title: Rundll32 JavaScript Execution
+id: 6e9d1a5b-0f7c-4d4e-ca8b-1i5f4d6e7a8b
+status: experimental
+description: |
+    Detects rundll32.exe being used to execute JavaScript or VBScript code via the
+    mshtml RunHTMLApplication method. This technique (T1218.011) allows attackers to
+    execute arbitrary scripts through rundll32, a trusted Windows binary, effectively
+    bypassing application whitelisting controls.
+references:
+    - https://lolbas-project.github.io/lolbas/Binaries/Rundll32/
+    - https://attack.mitre.org/techniques/T1218/011/
+author: Eswar Achari
+date: 2024/07/03
+modified: 2024/07/03
+tags:
+    - attack.defense_evasion
+    - attack.t1218.011
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection:
+        Image|endswith: '\rundll32.exe'
+        CommandLine|contains:
+            - 'javascript:'
+            - 'vbscript:'
+            - 'RunHTMLApplication'
+    condition: selection
+falsepositives:
+    - Very rare — legitimate rundll32 usage does not typically involve script execution
+level: critical
